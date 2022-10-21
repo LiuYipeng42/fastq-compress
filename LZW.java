@@ -149,8 +149,9 @@ public class LZW {
 	}
 
 	public void compress(String filepath) throws IOException {
-		int R = 256; // 输入字符数，asc有 177 个 ，需要 8 位
-		int L = 4096; // 编码总数 2^12
+		int R = 128; // 输入字符数，asc有 128 个 ，需要 8 位
+		int codeLen = 16;
+		int L = (int) Math.pow(2, codeLen); // 编码总数 2^12
 
 		readFile(filepath);
 		TST st = new TST();
@@ -180,7 +181,7 @@ public class LZW {
 			Prefix prefix = st.longestPrefixOf(text, beginIndex);
 
 			// 存储最长前缀的编码，编码是 12 位
-			for (int i = 11; i >= 0; i--) {
+			for (int i = codeLen - 1; i >= 0; i--) {
 				buffer <<= 1;
 				buffer |= ((prefix.code & (1 << i)) != 0) ? 1 : 0;
 				len++;
@@ -228,16 +229,18 @@ public class LZW {
 	}
 
 	public void expend(String filepath) throws IOException {
-		
-		// 编码表：数组下标为编码
-		// 建表方法：编码表中新的编码（编码序号加 1）对应的字符串 为 
-		//         当前输入编码对应的字符串 加上 下一个输入编码对应的字符串的首字母
 
-		String[] st = new String[4096];
+		int codeLen = 16;
+		int L = (int) Math.pow(2, codeLen); // 编码总数
+
+		// 编码表：数组下标为编码
+		// 建表方法：编码表中新的编码（编码序号加 1）对应的字符串 为
+		// 当前输入编码对应的字符串 加上 下一个输入编码对应的字符串的首字母
+		String[] st = new String[L];
 
 		// 初始化编码到字符串的编码表
 		int stIndex = 0;
-		for (stIndex = 0; stIndex < 256; stIndex++)
+		for (stIndex = 0; stIndex < 128; stIndex++)
 			st[stIndex] = "" + (char) stIndex;
 		st[stIndex++] = " ";
 
@@ -245,56 +248,50 @@ public class LZW {
 		BufferedInputStream in = new BufferedInputStream(is);
 		BufferedWriter out = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(getExpendFilename(filepath))));
-		
+
 		long byteNum = is.available();
 		long index = 0;
-		int nextCode = 0;  // 前瞻字符（对于当前编码的下一个编码对应字符串的首字符）所在字符串的编码
-		String val; // 当前读取的编码的对应字符串
+		int code = 0; // 前瞻字符（对于当前编码的下一个编码对应字符串的首字符）所在字符串的编码
+		String val = "";  // 当前读取的编码的对应字符串
 		int len = 0;
 
-		// 首先要读取一个编码，因为 编码为 12 位，所以要读取两个字节
-		byte[] t = new byte[2];
-		in.read(t);
-		index = 2;
-
-		// 取高 12位 数据，获得编码值
-		nextCode |= t[0];
-		nextCode <<= 4;
-		nextCode |= (t[1] >> 4) & 0xf;
-		val = st[nextCode];
-
-		nextCode = t[1] & 0xf;
-		len = 4;
+		boolean firstCode = true;
 
 		out: while (true) {
 			byte[] bytes = new byte[1024 * 1024];
 			in.read(bytes);
 			for (int i = 0; i < bytes.length; i++) {
 				for (int j = 1; j >= 0; j--) {
-					nextCode <<= 4;
-					nextCode |= (bytes[i] >> 4 * j) & 0xf;
+					code <<= 4;
+					code |= (bytes[i] >> 4 * j) & 0xf;
 					len += 4;
-					// 编码长度为 12，所以 len 为 12 时，就读取到了一个编码 
-					if (len == 12) {
+					// 编码长度为 codeLen，所以 len 与 codeLen 相当时，就读取到了一个编码
+					if (len == codeLen) {
+						if (firstCode){
+							// 第一次要额外读取要读取一个编码作为当前的编码
+							val = st[code];
+							firstCode = false;
+						} else {
+							// 编码对应的字符串输出到文件中
+							for (int k = 0; k < val.length(); k++)
+								out.write(val.charAt(k));
 
-						// 编码对应的字符串输出到文件中
-						for (int k = 0; k < val.length(); k++) 
-							out.write(val.charAt(k));
-						
-						// 找到前瞻字符所在的字符串
-						String s = st[nextCode];
-						// 当前需要存储到编码表的编码 stIndex 和 刚读取到的下一个编码 nextCode 相同
-						// 此时因为 stIndex 在符号表中还没有值，所以 s 为空
-						// s 就变为当前编码的字符串加上此字符串的首字符
-						if (stIndex == nextCode)
-							s = val + val.charAt(0);
-						// 下一个编码对应的字符串是 当前字符串 加上 前瞻字符
-						if (stIndex < 4096)
-							st[stIndex++] = val + s.charAt(0);
+							// 找到前瞻字符所在的字符串
+							String s = st[code];
+							// 当前需要存储到编码表的编码 stIndex 和 刚读取到的下一个编码 nextCode 相同
+							// 此时因为 stIndex 在符号表中还没有值，所以 s 为空
+							// s 就变为当前编码的字符串加上此字符串的首字符
+							if (stIndex == code)
+								s = val + val.charAt(0);
+							// 下一个编码对应的字符串是 当前字符串 加上 前瞻字符
+							if (stIndex < L)
+								st[stIndex++] = val + s.charAt(0);
 
-						// 当前编码的字符串 更新为 下一个编码的字符串
-						val = s; 
-						nextCode = 0;
+							// 当前编码的字符串 更新为 下一个编码的字符串
+							val = s;
+
+						}
+						code = 0;
 						len = 0;
 					}
 				}

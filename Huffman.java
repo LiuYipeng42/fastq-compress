@@ -114,7 +114,9 @@ public class Huffman {
 			table[HuffmanNode.getByte()] = new HuffmanCode(HuffmanCode, len);
 			return;
 		}
+		// 左子结点 0
 		buildHuffmanCode(table, HuffmanNode.getLeft(), HuffmanCode << 1, len + 1);
+		// 右子结点 1
 		buildHuffmanCode(table, HuffmanNode.getRight(), (HuffmanCode << 1) | 1, len + 1);
 	}
 
@@ -139,18 +141,19 @@ public class Huffman {
 		ObjectOutputStream oos = new ObjectOutputStream(bo);
 		oos.writeObject(trie);
 		byte[] objBytes = bo.toByteArray();
-		int objLen = objBytes.length;
+		int objByteLen = objBytes.length;
 
-		// 将序列化的树的数据长度和数据写入文件，write每次只写低 8 位
-		for (int i = 3; i >= 0; i--) {
-			out.write((int) (objLen >> (8 * i)));
-		}
+		// 将序列化的树的数据长度和数据写入文件，write 每次只写低 8 位
+		// 用 32 位来表示哈夫曼树的长度
+		for (int i = 3; i >= 0; i--) 
+			out.write((int) (objByteLen >> (8 * i)));
+		// 写入序列化后的哈夫曼树
 		out.write(objBytes);
 
-		// 将压缩后的 bit 数写入文件
-		for (int i = 0; i < 8; i++) {
+		// 将文件压缩后的数据的 bit 数写入文件
+		// 用 64 位表示一个数，此处只是占位
+		for (int i = 0; i < 8; i++) 
 			out.write(0);
-		}
 
 		// 压缩
 		InputStream is = new FileInputStream(filepath);
@@ -163,19 +166,23 @@ public class Huffman {
 		HuffmanCode HuffmanCode;
 		int buffer = 0;
 		int len = 0;
-		int bitLen = 0;
+		int bitLen = 0;  // 文件的总比特数
 
 		out: while (true) {
 			in.read(bytes);
 			for (int i = 0; i < bytes.length; i++) {
+				// 获取读取到的字节的哈夫曼编码
 				HuffmanCode = table[bytes[i]];
+				// 从编码的最高位开始写入文件
 				for (int j = HuffmanCode.len - 1; j >= 0; j--) {
+					// 缓冲区变量左移一位
 					buffer <<= 1;
-					if ((HuffmanCode.HuffmanCode & (1 << j)) != 0) {
+					// 从右往左数第 j 位上的是 1 还是 0
+					if ((HuffmanCode.HuffmanCode & (1 << j)) != 0) 
 						buffer |= 1;
-					}
-					len++;
+
 					bitLen++;
+					len++;
 					if (len == 8) {
 						out.write(buffer);
 						buffer = 0;
@@ -195,10 +202,13 @@ public class Huffman {
 		out.flush();
 		out.close();
 
+		// 在之前占位的位置写入压缩数据的比特数
 		RandomAccessFile rf = new RandomAccessFile(compressFilename, "rw");
-		rf.seek(4 + objLen);
+		// 用了 4 个字节记录了序列树的长度，所以要加上4
+		rf.seek(4 + objByteLen);
 		rf.writeLong(bitLen);
 		rf.close();
+		System.out.println(bitLen);
 
 		System.out.println("compress success");
 	}
@@ -253,12 +263,17 @@ public class Huffman {
 		out: while (true) {
 			in.read(bytes);
 			for (int i = 0; i < bytes.length; i++) {
+				// 以比特为单位遍历文件
 				for (int j = 7; j >= 0; j--) {
+					// 若为 1， 则访问右子结点
+					// 若为 0， 则访问左子结点
 					if ((bytes[i] & (1 << j)) != 0) {
 						x = x.getRight();
 					} else {
 						x = x.getLeft();
 					}
+					// 若访问到叶结点，则表明找到编码对应的字符，
+					// 将字符写入文件并还原到根节点
 					if (x.isLeaf()) {
 						out.write(x.getByte());
 						x = root;
@@ -297,9 +312,9 @@ public class Huffman {
 	public static void main(String[] args) throws IOException {
 		Huffman huffman = new Huffman();
 		long t = System.currentTimeMillis();
-		huffman.compress("test1_.fastq");
+		huffman.compress("test2_.fastq");
 		System.out.println("---------------------");
-		huffman.expend("test1_.huffman");
+		huffman.expend("test2_.huffman");
 		System.out.println("time: " + (System.currentTimeMillis() - t));
 	}
 }

@@ -174,9 +174,6 @@ public class RLE {
 				}
 
 				index++;
-				// if ((byteNum - index) % 1000000 == 0){
-				// 	System.out.println(byteNum - index);
-				// }
 				if (index == byteNum) {
 					if (cnt > 0 && !equal)
 						writeNotEqual(charBuffer, cnt, out);
@@ -233,7 +230,6 @@ public class RLE {
 		out: while (true) {
 			in.read(bytes);
 			for (int i = 0; i < bytes.length; i++) {
-				// System.out.println(binToString(bytes[i], 8));
 				for (int j = 7; j >= 0; j--) {
 					bit = (bytes[i] & (1 << j)) != 0 ? true : false;
 					if (bitLen == 0) {

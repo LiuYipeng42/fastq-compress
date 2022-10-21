@@ -83,22 +83,6 @@ class SFCode {
 
 public class ShannonFano {
 
-	private SFCode[] buildSFCode(SFNode trie) {
-		SFCode[] table = new SFCode[128];
-		buildSFCode(table, trie, 0, 0);
-
-		return table;
-	}
-
-	private void buildSFCode(SFCode[] table, SFNode SFNode, int SFCode, int len) {
-		if (SFNode.isLeaf()) {
-			table[SFNode.getBytes().get(0)] = new SFCode(SFCode, len);
-			return;
-		}
-		buildSFCode(table, SFNode.getLeft(), SFCode << 1, len + 1);
-		buildSFCode(table, SFNode.getRight(), (SFCode << 1) | 1, len + 1);
-	}
-
 	public SFCodes getSFCodes(Map<Byte, Integer> counts) {
 
 		// 按照出现次数从大到小排序，并返回 key
@@ -118,6 +102,22 @@ public class ShannonFano {
 		SFCodes.SFCodeTrie = trie;
 
 		return SFCodes;
+	}
+
+	private SFCode[] buildSFCode(SFNode trie) {
+		SFCode[] table = new SFCode[128];
+		buildSFCode(table, trie, 0, 0);
+
+		return table;
+	}
+
+	private void buildSFCode(SFCode[] table, SFNode SFNode, int SFCode, int len) {
+		if (SFNode.isLeaf()) {
+			table[SFNode.getBytes().get(0)] = new SFCode(SFCode, len);
+			return;
+		}
+		buildSFCode(table, SFNode.getLeft(), SFCode << 1, len + 1);
+		buildSFCode(table, SFNode.getRight(), (SFCode << 1) | 1, len + 1);
 	}
 
 	private static List<Byte> sortByCounts(Map<Byte, Integer> counts) {
