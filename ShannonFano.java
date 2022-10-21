@@ -85,27 +85,81 @@ public class ShannonFano {
 
 	public SFCodes getSFCodes(Map<Byte, Integer> counts) {
 
-		// 按照出现次数从大到小排序，并返回 key
+		// 排序，排序可以加快树的构建
 		List<Byte> list = sortByCounts(counts);
 
 		SFNode trie = new SFNode();
 
+		// 设置根节点含有的字符
 		trie.setBytes(list);
 
+		// 生成树
 		genTrie(trie, counts);
 
+		// 构建编码表
 		SFCode[] table = buildSFCode(trie);
 
 		SFCodes SFCodes = new SFCodes();
-
 		SFCodes.SFCodeTable = table;
 		SFCodes.SFCodeTrie = trie;
 
 		return SFCodes;
 	}
 
+	private static List<Byte> sortByCounts(Map<Byte, Integer> counts) {
+
+		Set<Byte> countsKeys = counts.keySet();
+
+		List<Byte> list = new ArrayList<Byte>(countsKeys);
+
+		// 按照字符出现次数，对字符进行从大到小的排序
+		Collections.sort(list, (o1, o2) -> -counts.get(o1).compareTo(counts.get(o2)));
+
+		return list;
+	}
+
+	private static void genTrie(SFNode SFNode, Map<Byte, Integer> counts) {
+		
+		List<Byte> list = SFNode.getBytes();
+
+		// 结点中的字符只有一个，说明为叶结点
+		if (list.size() <= 1)
+			return;
+
+		// 计算总频率
+		int fullSum = 0;
+		for (byte b : list)
+			fullSum += counts.get(b);
+
+		float bestdiff = 5;
+		int i = 0;
+		int sum = 0;
+		// 左子结点中字符的总频率和尽可能接近左子结点中字符的总频率
+		while (i < list.size()) {
+			float prediff = bestdiff;
+			// 计算 i 之前的所有数的和
+			sum += counts.get(list.get(i)); 
+			// 计算 和 与 0.5 的差的绝对值，因为和要接近总和的一半
+			bestdiff = Math.abs((float) sum / fullSum - 0.5F); 
+			// 越接近中间值，绝对值就会越小，当绝对值开始变大时，说明刚好经过了中间值
+			// 所以绝对值比上一个绝对值大，就跳出循环
+			if (prediff < bestdiff) 
+				break;
+			i++;
+		}
+
+		SFNode.setBytes(null);
+		// 设置左、右子结点
+		SFNode.setLeft(new SFNode(new ArrayList<>(list.subList(0, i))));
+		SFNode.setRight(new SFNode(new ArrayList<>(list.subList(i, list.size()))));
+
+		// 下一层递归
+		genTrie(SFNode.getLeft(), counts);
+		genTrie(SFNode.getRight(), counts);
+	}
+
 	private SFCode[] buildSFCode(SFNode trie) {
-		SFCode[] table = new SFCode[128];
+		SFCode[] table = new SFCode[128];  // 存储 128 个 asc 码的编码
 		buildSFCode(table, trie, 0, 0);
 
 		return table;
@@ -116,51 +170,10 @@ public class ShannonFano {
 			table[SFNode.getBytes().get(0)] = new SFCode(SFCode, len);
 			return;
 		}
+
+		// 左子结点 0，右子结点 1
 		buildSFCode(table, SFNode.getLeft(), SFCode << 1, len + 1);
 		buildSFCode(table, SFNode.getRight(), (SFCode << 1) | 1, len + 1);
-	}
-
-	private static List<Byte> sortByCounts(Map<Byte, Integer> counts) {
-
-		Set<Byte> countsKeys = counts.keySet();
-
-		List<Byte> list = new ArrayList<Byte>(countsKeys);
-
-		Collections.sort(list, (o1, o2) -> -counts.get(o1).compareTo(counts.get(o2)));
-
-		return list;
-	}
-
-	private static void genTrie(SFNode SFNode, Map<Byte, Integer> counts) {
-
-		List<Byte> list = SFNode.getBytes();
-
-		if (list.size() <= 1)
-			return;
-
-		int sum = 0;
-		int fullSum = 0;
-		for (byte b : list)
-			fullSum += counts.get(b);
-
-		float bestdiff = 5;
-		int i = 0;
-
-		while (i < list.size()) {
-			float prediff = bestdiff;
-			sum += counts.get(list.get(i)); // 计算 i 之前的所有数的和
-			bestdiff = Math.abs((float) sum / fullSum - 0.5F); // 计算 和 与 0.5 的差的绝对值
-			if (prediff < bestdiff) // 若绝对值比上一个绝对值大，就跳出循环
-				break;
-			i++;
-		}
-
-		SFNode.setBytes(null);
-		SFNode.setLeft(new SFNode(new ArrayList<>(list.subList(0, i))));
-		SFNode.setRight(new SFNode(new ArrayList<>(list.subList(i, list.size()))));
-
-		genTrie(SFNode.getLeft(), counts);
-		genTrie(SFNode.getRight(), counts);
 	}
 
 	private Map<Byte, Integer> buildCounts(String filepath) throws IOException {
@@ -374,9 +387,9 @@ public class ShannonFano {
 		ShannonFano shannonFano = new ShannonFano();
 
 		long t = System.currentTimeMillis();
-		shannonFano.compress("test1_.fastq");
+		shannonFano.compress("test2_.fastq");
 		System.out.println("---------------------");
-		shannonFano.expend("test1_.sf");
+		shannonFano.expend("test2_.sf");
 		System.out.println("time: " + (System.currentTimeMillis() - t));
 
 	}

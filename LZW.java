@@ -149,7 +149,7 @@ public class LZW {
 	}
 
 	public void compress(String filepath) throws IOException {
-		int R = 128; // 输入字符数，asc有 128 个 ，需要 8 位
+		int R = 128; // 输入字符数，asc 有 128 个 ，需要 8 位
 		int codeLen = 16;
 		int L = (int) Math.pow(2, codeLen); // 编码总数 2^12
 

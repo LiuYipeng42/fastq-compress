@@ -114,9 +114,9 @@ public class Huffman {
 			table[HuffmanNode.getByte()] = new HuffmanCode(HuffmanCode, len);
 			return;
 		}
-		// 左子结点 0
+		
+		// 左子结点 0，右子结点 1
 		buildHuffmanCode(table, HuffmanNode.getLeft(), HuffmanCode << 1, len + 1);
-		// 右子结点 1
 		buildHuffmanCode(table, HuffmanNode.getRight(), (HuffmanCode << 1) | 1, len + 1);
 	}
 
