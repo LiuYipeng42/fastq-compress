@@ -22,7 +22,7 @@ public class BWT {
 		char[] last = new char[len];
 		List<Integer> index = new ArrayList<>();
 
-		// 循环字符串矩阵最后一列从上到下是将 原字符串逆序后加上分割符
+		// 循环字符串矩阵最后一列从上到下是将 原字符串逆序后加上分隔符
 		for (int i = 0; i < len - 1; i++)
 			last[i] = charArray[len - i - 2];
 		last[len - 1] = charArray[len - 1];
@@ -30,10 +30,8 @@ public class BWT {
 		for (int i = 0; i < len; i++)
 			index.add(i);
 
-		System.out.println();
-
 		// 对循环字符串矩阵的每一行进行字典序排序（若某一列相等，则比较下一列），
-		// 因为排序完成后只需要矩阵的最后一列
+		// 因为排序完成后只需要矩阵的最后一列，
 		// 所以可以按照字符数组，对其序号排序，
 		// 排完序后，index[i] 就是最后一列中第 i 个元素的位置
 		Collections.sort(
@@ -64,6 +62,11 @@ public class BWT {
 	}
 
 	public String deCode(String str) {
+		// bwt 在解压时要重建循环字符串矩阵
+		// 首先将压缩后的字符串按照顺序从上到下放到最后一列
+		// 然后插入到第一列，对矩阵进行每一行进行排序（不包括最后一列），
+		// 然后再次将最后一列插入到第一列，重复以上步骤，直到矩阵填满
+
 		int len = str.length();
 		char[] lastCol = str.toCharArray();
 		List<Integer> sortIndex = new ArrayList<>();
@@ -71,20 +74,26 @@ public class BWT {
 		for (int i = 0; i < len; i++)
 			sortIndex.add(i);
 
-		// 在最前面加上最后一列后，因为后一列的顺序已经是排好的，且此排序是稳定排序，
-		// 所以只需对最后一列排序一次，记录下交换的位置即可
+		// 在最前面加上最后一列后，就需要进行行排序，若遇到某两行的同一列相等，
+		// 就需要比较后一列，因为后面一列元素在上一轮操作中已经排好序，且使用的排序算法是稳定排序，
+		// 所以不需要继续向后面比较，两者的顺序不需要变换就是正确的。所以在进行行排序时
+		// 所以只需对最后一列排序一次，记录下交换的位置即可，之后每一次按照固定的顺序交换即可
 		Collections.sort(sortIndex, (i1, i2) -> lastCol[i1] - lastCol[i2]);
 
+		// 还原完矩阵后，若某一行最后一个的元素为分隔符时，此行就是解压后的字符串
+		// 所以要找到对应的行数，之后只需要得到这一行的数据就可以了，不需要其他行的数据
 		int index = 0;
 		for (int j = 0; j < lastCol.length; j++) {
 			if (lastCol[j] == '\0')
 				index = j;
 		}
 
+		// 对最后一列按照排序后得到的正确位置进行 len - 1 第变换
+		// 第 i 次变换可以得到第 i 列的原矩阵数据
+		// 在两个数组中来回变换，每次得到的新的一列的第 index 行就是解压前的数据
+		StringBuilder sb = new StringBuilder();
 		char[] newCol1 = new char[len];
 		char[] newCol2 = lastCol.clone();
-
-		StringBuilder sb = new StringBuilder();
 
 		for (int i = 0; i < len - 1; i++) {
 			if (i % 2 == 0) {
