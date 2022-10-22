@@ -191,9 +191,8 @@ public class RLE {
 
 		if (new File(expendFilename + ".fastq").exists()) {
 			int c = 1;
-			while (new File(expendFilename + c + ".fastq").exists()) {
+			while (new File(expendFilename + c + ".fastq").exists()) 
 				c += 1;
-			}
 			expendFilename += c + ".fastq";
 		}
 		return expendFilename;

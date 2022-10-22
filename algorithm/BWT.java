@@ -22,6 +22,7 @@ public class BWT {
 		char[] last = new char[len];
 		List<Integer> index = new ArrayList<>();
 
+		// 循环字符串矩阵最后一列从上到下是将 原字符串逆序后加上分割符
 		for (int i = 0; i < len - 1; i++)
 			last[i] = charArray[len - i - 2];
 		last[len - 1] = charArray[len - 1];
@@ -29,11 +30,21 @@ public class BWT {
 		for (int i = 0; i < len; i++)
 			index.add(i);
 
+		System.out.println();
+
+		// 对循环字符串矩阵的每一行进行字典序排序（若某一列相等，则比较下一列），
+		// 因为排序完成后只需要矩阵的最后一列
+		// 所以可以按照字符数组，对其序号排序，
+		// 排完序后，index[i] 就是最后一列中第 i 个元素的位置
 		Collections.sort(
-				index,
+				index,	
 				(i1, i2) -> {
+					// i1 和 i2 是 原字符串 的序号
+					// 要经过转换变成循环字符串矩阵 第一列 的序号
+					// 第一列 是 原字符串的逆序
 					int index1 = len - i1 - 1;
 					int index2 = len - i2 - 1;
+					// 当前的两个字符相等，就比较下一个字符
 					while (charArray[index1] == charArray[index2]) {
 						index1++;
 						index2++;
@@ -157,18 +168,18 @@ public class BWT {
 
 	public static void main(String[] args) throws IOException {
 
-		// String test = "ban\ncnd\0";
-		// BWT bwt = new BWT();
-		// String r = bwt.enCode(test);
-		// System.out.println(r);
-		// System.out.println("----------------------------------");
-		// System.out.println(bwt.deCode(r));
-
+		String test = "banana$";
 		BWT bwt = new BWT();
-		long t = System.currentTimeMillis();
-		bwt.bwt("test1_.fastq", "bwt");
-		bwt.bwt("test1_.bwt", "ibwt");
-		System.out.println("time: " + (System.currentTimeMillis() - t));
+		String r = bwt.enCode(test);
+		System.out.println(r);
+		System.out.println("----------------------------------");
+		System.out.println(bwt.deCode(r));
+
+		// BWT bwt = new BWT();
+		// long t = System.currentTimeMillis();
+		// bwt.bwt("test1_.fastq", "bwt");
+		// bwt.bwt("test1_.bwt", "ibwt");
+		// System.out.println("time: " + (System.currentTimeMillis() - t));
 
 	}
 }

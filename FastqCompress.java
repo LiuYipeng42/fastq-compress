@@ -52,10 +52,10 @@ public class FastqCompress {
             cnt++;
         }
 
+        CompressionData data;
         int buffer = 0;
         int len = 0;
         cnt = 0;
-        CompressionData data;
         reader.reset();
         huffman.buildTrie();
         huffman.buildHuffmanCode();
