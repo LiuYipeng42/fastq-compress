@@ -141,6 +141,20 @@ public class LZW {
 
 	private int L = (int) Math.pow(2, codeLen); // 编码总数
 
+	private TST tst = new TST();
+
+	private String[] st = new String[L];
+
+	{
+		for (int i = 0; i < R; i++)
+			tst.put("" + (char) i, i);
+
+		int stIndex = 0;
+		for (stIndex = 0; stIndex < 128; stIndex++)
+			st[stIndex] = "" + (char) stIndex;
+		st[stIndex++] = " ";
+	}
+
 	private void readFile(String filepath) throws FileNotFoundException, IOException {
 		InputStream is = new FileInputStream(filepath);
 		byte[] bytes = new byte[is.available()];
@@ -153,11 +167,6 @@ public class LZW {
 
 		ArrayList<Byte> bytes = new ArrayList<>();
 
-		TST st = new TST();
-
-		for (int i = 0; i < R; i++)
-			st.put("" + (char) i, i);
-
 		int code = R + 1;
 		int beginIndex = 0;
 		int buffer = 0;
@@ -165,7 +174,7 @@ public class LZW {
 
 		while (beginIndex < text.length()) {
 
-			Prefix prefix = st.longestPrefixOf(text, beginIndex);
+			Prefix prefix = tst.longestPrefixOf(text, beginIndex);
 
 			for (int i = codeLen - 1; i >= 0; i--) {
 				buffer <<= 1;
@@ -180,7 +189,7 @@ public class LZW {
 
 			int plen = prefix.str.length();
 			if (plen < text.length() - beginIndex && code < L)
-				st.put(text.substring(beginIndex, beginIndex + plen + 1), code++);
+				tst.put(text.substring(beginIndex, beginIndex + plen + 1), code++);
 
 			beginIndex += plen;
 		}
@@ -196,16 +205,11 @@ public class LZW {
 	public String expendBytes(byte[] bytes){
 		StringBuilder text = new StringBuilder();
 
-		String[] st = new String[L];
-
-		int stIndex = 0;
-		for (stIndex = 0; stIndex < 128; stIndex++)
-			st[stIndex] = "" + (char) stIndex;
-		st[stIndex++] = " ";
-
 		int code = 0;
 		String val = "";
 		int len = 0;
+
+		int stIndex = 129;
 
 		boolean firstCode = true;
 
@@ -255,11 +259,11 @@ public class LZW {
 
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(compressFilename));
 
-		TST st = new TST();
+		TST tst = new TST();
 
 		// 先将每一种字符的编码存储到树中
 		for (int i = 0; i < R; i++)
-			st.put("" + (char) i, i);
+			tst.put("" + (char) i, i);
 
 		int code = R + 1;
 		int beginIndex = 0;
@@ -269,7 +273,7 @@ public class LZW {
 		while (beginIndex < text.length()) {
 
 			// 找到最长前缀及其编码
-			Prefix prefix = st.longestPrefixOf(text, beginIndex);
+			Prefix prefix = tst.longestPrefixOf(text, beginIndex);
 
 			// 存储最长前缀的编码，编码是 12 位
 			for (int i = codeLen - 1; i >= 0; i--) {
@@ -286,7 +290,7 @@ public class LZW {
 			// 最长前缀 加上 之后一个字符 ，将形成的字符串存储到树中，编码为当前编码加 1
 			int plen = prefix.str.length();
 			if (plen < text.length() - beginIndex && code < L)
-				st.put(text.substring(beginIndex, beginIndex + plen + 1), code++);
+				tst.put(text.substring(beginIndex, beginIndex + plen + 1), code++);
 
 			beginIndex += plen;
 		}

@@ -44,9 +44,9 @@ public class Huffman {
 
 		out: while (true) {
 			in.read(bytes);
-
+			
 			for (int i = 0; i < bytes.length; i++) {
-				int f = counts.getOrDefault(bytes[i], 0);
+				int f = counts.getOrDefault((char) bytes[i], 0);
 				counts.put((char) bytes[i], f + 1);
 				index++;
 				if (index == byteNum) {
@@ -341,9 +341,9 @@ public class Huffman {
 	public static void main(String[] args) throws IOException {
 		Huffman huffman = new Huffman();
 		long t = System.currentTimeMillis();
-		huffman.compressFile("test2.fastq");
+		huffman.compressFile("test_data/test4.fastq");
 		System.out.println("---------------------");
-		huffman.expendFile("test2.huffman");
+		huffman.expendFile("test_data/test4.huffman");
 		System.out.println("time: " + (System.currentTimeMillis() - t));
 	}
 }
