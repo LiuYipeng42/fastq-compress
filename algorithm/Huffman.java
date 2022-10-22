@@ -16,11 +16,15 @@ import java.nio.ByteBuffer;
 
 public class Huffman {
 
-	HashMap<Character, Integer> counts = new HashMap<>();
+	private HashMap<Character, Integer> counts = new HashMap<>();
 
-	HuffmanNode trie;
+	private HuffmanNode trie;
 
-	HuffmanCode[] table;
+	private HuffmanCode[] table;
+
+	public HuffmanNode getTrie() {
+		return trie;
+	}
 
 	public void countText(String text) throws IOException {
 		for (int i = 0; i < text.length(); i++) {

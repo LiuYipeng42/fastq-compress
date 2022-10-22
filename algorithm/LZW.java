@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 
 import pojo.Prefix;
 
@@ -134,6 +135,12 @@ public class LZW {
 
 	private String text;
 
+	private int R = 128; // 输入字符数，asc 有 128 个 ，需要 8 位
+
+	private int codeLen = 16; // 编码长度
+
+	private int L = (int) Math.pow(2, codeLen); // 编码总数
+
 	private void readFile(String filepath) throws FileNotFoundException, IOException {
 		InputStream is = new FileInputStream(filepath);
 		byte[] bytes = new byte[is.available()];
@@ -142,17 +149,101 @@ public class LZW {
 		is.close();
 	}
 
-	public void compress(String filepath) throws IOException {
-		int R = 128; // 输入字符数，asc 有 128 个 ，需要 8 位
-		int codeLen = 16;
-		int L = (int) Math.pow(2, codeLen); // 编码总数 2^12
+	public ArrayList<Byte> compressText(String text){
 
-		readFile(filepath);
+		ArrayList<Byte> bytes = new ArrayList<>();
+
 		TST st = new TST();
 
-		// 先将每一种字符的编码存储到树中
 		for (int i = 0; i < R; i++)
 			st.put("" + (char) i, i);
+
+		int code = R + 1;
+		int beginIndex = 0;
+		int buffer = 0;
+		int len = 0;
+
+		while (beginIndex < text.length()) {
+
+			Prefix prefix = st.longestPrefixOf(text, beginIndex);
+
+			for (int i = codeLen - 1; i >= 0; i--) {
+				buffer <<= 1;
+				buffer |= ((prefix.code & (1 << i)) != 0) ? 1 : 0;
+				len++;
+				if (len == 8) {
+					bytes.add((byte) buffer);
+					buffer = 0;
+					len = 0;
+				}
+			}
+
+			int plen = prefix.str.length();
+			if (plen < text.length() - beginIndex && code < L)
+				st.put(text.substring(beginIndex, beginIndex + plen + 1), code++);
+
+			beginIndex += plen;
+		}
+
+		if (buffer != 0) {
+			buffer <<= 4;
+			bytes.add((byte) buffer);
+		}
+
+		return bytes;
+	}
+
+	public String expendBytes(byte[] bytes){
+		StringBuilder text = new StringBuilder();
+
+		String[] st = new String[L];
+
+		int stIndex = 0;
+		for (stIndex = 0; stIndex < 128; stIndex++)
+			st[stIndex] = "" + (char) stIndex;
+		st[stIndex++] = " ";
+
+		int code = 0;
+		String val = "";
+		int len = 0;
+
+		boolean firstCode = true;
+
+		for (int i = 0; i < bytes.length; i++) {
+			for (int j = 1; j >= 0; j--) {
+				code <<= 4;
+				code |= (bytes[i] >> 4 * j) & 0xf;
+				len += 4;
+				if (len == codeLen) {
+					if (firstCode){
+						val = st[code];
+						firstCode = false;
+					} else {
+						text.append(val);
+
+						String s = st[code];
+						if (stIndex == code)
+							s = val + val.charAt(0);
+						if (stIndex < L)
+							st[stIndex++] = val + s.charAt(0);
+
+						val = s;
+					}
+					code = 0;
+					len = 0;
+				}
+			}
+		}
+
+		text.append(val);
+
+		return text.toString();
+
+	}
+
+	public void compressFile(String filepath) throws IOException {
+
+		readFile(filepath);
 
 		// 获取加密后的文件名称
 		String compressFilename = "";
@@ -163,6 +254,12 @@ public class LZW {
 		compressFilename += ".lzw";
 
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(compressFilename));
+
+		TST st = new TST();
+
+		// 先将每一种字符的编码存储到树中
+		for (int i = 0; i < R; i++)
+			st.put("" + (char) i, i);
 
 		int code = R + 1;
 		int beginIndex = 0;
@@ -222,10 +319,7 @@ public class LZW {
 		return expendFilename;
 	}
 
-	public void expend(String filepath) throws IOException {
-
-		int codeLen = 16;
-		int L = (int) Math.pow(2, codeLen); // 编码总数
+	public void expendFile(String filepath) throws IOException {
 
 		// 编码表：数组下标为编码
 		// 建表方法：编码表中新的编码（编码序号加 1）对应的字符串 为
@@ -291,7 +385,9 @@ public class LZW {
 				}
 
 				index++;
-				if (index == byteNum + 2) {
+				if (index == byteNum) {
+					for (int k = 0; k < val.length(); k++)
+						out.write(val.charAt(k));
 					break out;
 				}
 			}
@@ -310,9 +406,9 @@ public class LZW {
 		LZW lzw = new LZW();
 
 		long t = System.currentTimeMillis();
-		lzw.compress("dataset.fastq");
+		lzw.compressFile("test_data/test2.fastq");
 		System.out.println("------------------------");
-		lzw.expend("dataset.lzw");
+		lzw.expendFile("test_data/test2.lzw");
 		System.out.println("time: " + (System.currentTimeMillis() - t));
 
 	}
