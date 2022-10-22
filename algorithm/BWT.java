@@ -62,7 +62,7 @@ public class BWT {
 	}
 
 	public String deCode(String str) {
-		// bwt 在解压时要重建循环字符串矩阵
+		// bwt 在还原变换时要重建循环字符串矩阵
 		// 首先将压缩后的字符串按照顺序从上到下放到最后一列
 		// 然后插入到第一列，对矩阵进行每一行进行排序（不包括最后一列），
 		// 然后再次将最后一列插入到第一列，重复以上步骤，直到矩阵填满
@@ -90,7 +90,7 @@ public class BWT {
 
 		// 对最后一列按照排序后得到的正确位置进行 len - 1 第变换
 		// 第 i 次变换可以得到第 i 列的原矩阵数据
-		// 在两个数组中来回变换，每次得到的新的一列的第 index 行就是解压前的数据
+		// 在两个数组中来回变换，每次得到的新的一列的第 index 行就是变换前的数据
 		StringBuilder sb = new StringBuilder();
 		char[] newCol1 = new char[len];
 		char[] newCol2 = lastCol.clone();
