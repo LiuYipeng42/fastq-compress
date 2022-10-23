@@ -87,8 +87,6 @@ public class BinRLE {
 		in.close();
 		out.close();
 
-		System.out.println("compress success");
-
 	}
 
 	private String getExpendFilename(String filepath) {
@@ -175,7 +173,6 @@ public class BinRLE {
 		in.close();
 		out.close();
 
-		System.out.println("expend success");
 	}
 
 	public static void main(String[] args) throws IOException {

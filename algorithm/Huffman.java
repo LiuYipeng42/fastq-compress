@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import pojo.CompressionData;
+import pojo.CompressResult;
 import pojo.HuffmanCode;
 import pojo.HuffmanNode;
 
@@ -14,7 +14,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 
 
-public class Huffman {
+public class Huffman extends Algorithm {
 
 	private HashMap<Character, Integer> counts = new HashMap<>();
 
@@ -93,7 +93,7 @@ public class Huffman {
 		buildHuffmanCode(table, HuffmanNode.getRight(), (HuffmanCode << 1) | 1, len + 1);
 	}
 
-	public CompressionData compressText(String text){
+	public CompressResult compressText(String text){
 		ArrayList<Byte> bytes = new ArrayList<>();
 
 		HuffmanCode code;
@@ -121,7 +121,7 @@ public class Huffman {
 		if (buffer != 0)
 			bytes.add((byte) (buffer << 8 - len));
 
-		return new CompressionData(bytes, bitLen);
+		return new CompressResult(bytes, bitLen);
 	}
 
 	public String expendBytes(HuffmanNode trie, byte[] bytes, int size){
@@ -149,7 +149,7 @@ public class Huffman {
 		return text.toString();
 	}
 
-	public void compressFile(String filepath) throws IOException {
+	public void compress(String filepath) throws IOException {
 
 		countFile(filepath);
 		buildTrie();
@@ -237,9 +237,7 @@ public class Huffman {
 		rf.seek(4 + objByteLen);
 		rf.writeLong(bitLen);
 		rf.close();
-		System.out.println(bitLen);
 
-		System.out.println("compress success");
 	}
 
 	private String getExpendFilename(String filepath) {
@@ -259,7 +257,7 @@ public class Huffman {
 		return expendFilename;
 	}
 
-	public void expendFile(String filepath) throws IOException {
+	public void expend(String filepath) throws IOException {
 
 		BufferedInputStream in = new BufferedInputStream(new FileInputStream(filepath));
 		BufferedWriter out = new BufferedWriter(
@@ -319,7 +317,6 @@ public class Huffman {
 
 		out.flush();
 		out.close();
-		System.out.println("expend success");
 	}
 
 	public static Object deserialize(byte[] bytes) {
@@ -338,12 +335,4 @@ public class Huffman {
 		return object;
 	}
 
-	public static void main(String[] args) throws IOException {
-		Huffman huffman = new Huffman();
-		long t = System.currentTimeMillis();
-		huffman.compressFile("test_data/test4.fastq");
-		System.out.println("---------------------");
-		huffman.expendFile("test_data/test4.huffman");
-		System.out.println("time: " + (System.currentTimeMillis() - t));
-	}
 }

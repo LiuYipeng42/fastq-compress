@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class RLE {
+public class RLE extends Algorithm {
 
 	private int eBitLen = 3; // 表示连续相等字符串的长度的 bit 数
 	private int eLenMax = (int) Math.pow(2, eBitLen - 1) - 1;
@@ -285,14 +285,4 @@ public class RLE {
 		out.close();
 	}
 
-	public static void main(String[] args) throws IOException {
-		RLE rle = new RLE();
-		long t = System.currentTimeMillis();
-		String file = "dataset";
-		rle.compress(file + ".fastq");
-		System.out.println("---------------------");
-		rle.expend(file + ".rle");
-		System.out.println("time: " + (System.currentTimeMillis() - t));
-
-	}
 }

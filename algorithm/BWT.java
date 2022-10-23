@@ -63,7 +63,7 @@ public class BWT {
 
 	public String deCode(String str) {
 		// bwt 在还原变换时要重建循环字符串矩阵
-		// 首先将压缩后的字符串按照顺序从上到下放到最后一列
+		// 首先将变换后的字符串按照顺序从上到下放到最后一列
 		// 然后插入到第一列，对矩阵进行每一行进行排序（不包括最后一列），
 		// 然后再次将最后一列插入到第一列，重复以上步骤，直到矩阵填满
 
@@ -77,7 +77,7 @@ public class BWT {
 		// 在最前面加上最后一列后，就需要进行行排序，若遇到某两行的同一列相等，
 		// 就需要比较后一列，因为后面一列元素在上一轮操作中已经排好序，且使用的排序算法是稳定排序，
 		// 所以不需要继续向后面比较，两者的顺序不需要变换就是正确的。所以在进行行排序时
-		// 所以只需对最后一列排序一次，记录下交换的位置即可，之后每一次按照固定的顺序交换即可
+		// 只需对最后一列排序一次，记录下交换的位置即可，之后每一次按照固定的顺序交换即可
 		Collections.sort(sortIndex, (i1, i2) -> lastCol[i1] - lastCol[i2]);
 
 		// 还原完矩阵后，若某一行最后一个的元素为分隔符时，此行就是解压后的字符串
@@ -134,10 +134,9 @@ public class BWT {
 		return filename;
 	}
 
-	public void bwt(String filepath, String type) throws IOException {
+	public void bwt(String filepath, String type, int len) throws IOException {
 
 		String filename;
-		int len = 1024 * 100;
 		if (type.equals("bwt")) {
 			filename = bwtFilename(filepath);
 		} else {
@@ -166,29 +165,12 @@ public class BWT {
 				out.write(enCode(new String(bytes) + "\0").getBytes());
 			else
 				out.write(deCode(new String(bytes)).getBytes());
-			System.out.println(byteNum);
+			// System.out.println(byteNum);
 			byteNum -= len;
 
 		}
 
 		in.close();
 		out.close();
-	}
-
-	public static void main(String[] args) throws IOException {
-
-		String test = "banana$";
-		BWT bwt = new BWT();
-		String r = bwt.enCode(test);
-		System.out.println(r);
-		System.out.println("----------------------------------");
-		System.out.println(bwt.deCode(r));
-
-		// BWT bwt = new BWT();
-		// long t = System.currentTimeMillis();
-		// bwt.bwt("test1_.fastq", "bwt");
-		// bwt.bwt("test1_.bwt", "ibwt");
-		// System.out.println("time: " + (System.currentTimeMillis() - t));
-
 	}
 }

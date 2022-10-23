@@ -27,7 +27,7 @@ import pojo.SFCode;
 import pojo.SFCodes;
 
 
-public class ShannonFano {
+public class ShannonFano extends Algorithm {
 
 	public SFCodes getSFCodes(Map<Byte, Integer> counts) {
 
@@ -234,8 +234,6 @@ public class ShannonFano {
 		rf.writeLong(bitLen);
 		rf.close();
 
-		System.out.println("compress success");
-
 	}
 
 	private String getExpendFilename(String filepath) {
@@ -309,7 +307,7 @@ public class ShannonFano {
 
 		out.flush();
 		out.close();
-		System.out.println("expend success");
+
 	}
 
 	public static Object deserialize(byte[] bytes) {
@@ -326,18 +324,6 @@ public class ShannonFano {
 			ex.printStackTrace();
 		}
 		return object;
-	}
-
-	public static void main(String[] args) throws IOException {
-
-		ShannonFano shannonFano = new ShannonFano();
-
-		long t = System.currentTimeMillis();
-		shannonFano.compress("test2_.fastq");
-		System.out.println("---------------------");
-		shannonFano.expend("test2_.sf");
-		System.out.println("time: " + (System.currentTimeMillis() - t));
-
 	}
 
 }

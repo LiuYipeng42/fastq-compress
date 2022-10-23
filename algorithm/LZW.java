@@ -131,7 +131,7 @@ class TST {
 
 }
 
-public class LZW {
+public class LZW extends Algorithm {
 
 	private String text;
 
@@ -245,7 +245,7 @@ public class LZW {
 
 	}
 
-	public void compressFile(String filepath) throws IOException {
+	public void compress(String filepath) throws IOException {
 
 		readFile(filepath);
 
@@ -302,8 +302,6 @@ public class LZW {
 
 		out.close();
 
-		System.out.println("compress success");
-
 	}
 
 	private String getExpendFilename(String filepath) {
@@ -323,7 +321,7 @@ public class LZW {
 		return expendFilename;
 	}
 
-	public void expendFile(String filepath) throws IOException {
+	public void expend(String filepath) throws IOException {
 
 		// 编码表：数组下标为编码
 		// 建表方法：编码表中新的编码（编码序号加 1）对应的字符串 为
@@ -401,19 +399,6 @@ public class LZW {
 		out.flush();
 		out.close();
 
-		System.out.println("expend success");
-
-	}
-
-	public static void main(String[] args) throws IOException {
-
-		LZW lzw = new LZW();
-
-		long t = System.currentTimeMillis();
-		lzw.compressFile("test_data/test2.fastq");
-		System.out.println("------------------------");
-		lzw.expendFile("test_data/test2.lzw");
-		System.out.println("time: " + (System.currentTimeMillis() - t));
 
 	}
 

@@ -6,11 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import algorithm.Algorithm;
 import algorithm.Huffman;
 import algorithm.LZW;
-import pojo.CompressionData;
+import pojo.CompressResult;
 
-public class FastqCompress {
+public class FastqCompress extends Algorithm {
 
     public static String binToString(int b, int len) {
         String result = "";
@@ -32,13 +33,21 @@ public class FastqCompress {
     }
 
     public void compress(String filepath) throws IOException {
+
+		// 获取压缩后的文件名
+		String compressFilename = "";
+		String[] t = filepath.split("\\.");
+		for (int i = 0; i < t.length - 1; i++) 
+			compressFilename += t[i];
+		compressFilename += ".fmix";
+
         Huffman huffman = new Huffman();
         LZW lzw = new LZW();
 
         File file = new File(filepath);
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
-        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("test.test"));
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(compressFilename));
 
         String line;
         int cnt = 0;
@@ -52,7 +61,7 @@ public class FastqCompress {
             cnt++;
         }
 
-        CompressionData data;
+        CompressResult data;
         int buffer = 0;
         int len = 0;
         cnt = 0;
@@ -109,8 +118,4 @@ public class FastqCompress {
         out.close();
     }
 
-    public static void main(String[] args) throws IOException {
-
-        new FastqCompress().compress("test_data/dataset.fastq");
-    }
 }
