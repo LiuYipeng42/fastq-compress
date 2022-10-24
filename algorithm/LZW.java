@@ -145,6 +145,10 @@ public class LZW extends Algorithm {
 
 	private String[] st = new String[L];
 
+	private int code = R + 1; // compress table index
+
+	private int stIndex = 129; // expend table index
+
 	{
 		for (int i = 0; i < R; i++)
 			tst.put("" + (char) i, i);
@@ -167,7 +171,6 @@ public class LZW extends Algorithm {
 
 		ArrayList<Byte> bytes = new ArrayList<>();
 
-		int code = R + 1;
 		int beginIndex = 0;
 		int buffer = 0;
 		int len = 0;
@@ -194,7 +197,7 @@ public class LZW extends Algorithm {
 			beginIndex += plen;
 		}
 
-		if (buffer != 0) {
+		if (len != 0) {
 			buffer <<= 4;
 			bytes.add((byte) buffer);
 		}
@@ -202,18 +205,16 @@ public class LZW extends Algorithm {
 		return bytes;
 	}
 
-	public String expendBytes(byte[] bytes){
+	public String expendBytes(byte[] bytes, int bytesLen){
 		StringBuilder text = new StringBuilder();
 
 		int code = 0;
 		String val = "";
 		int len = 0;
 
-		int stIndex = 129;
-
 		boolean firstCode = true;
 
-		for (int i = 0; i < bytes.length; i++) {
+		for (int i = 0; i < bytesLen; i++) {
 			for (int j = 1; j >= 0; j--) {
 				code <<= 4;
 				code |= (bytes[i] >> 4 * j) & 0xf;
@@ -295,7 +296,7 @@ public class LZW extends Algorithm {
 			beginIndex += plen;
 		}
 
-		if (buffer != 0) {
+		if (len != 0) {
 			buffer <<= 4;
 			out.write(buffer);
 		}

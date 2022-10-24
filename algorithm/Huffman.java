@@ -93,6 +93,25 @@ public class Huffman extends Algorithm {
 		buildHuffmanCode(table, HuffmanNode.getRight(), (HuffmanCode << 1) | 1, len + 1);
 	}
 
+	public static String binToString(int b, int len) {
+		String result = "";
+		int a = b;
+
+		for (int j = 0; j < len; j++) {
+			int c = a;
+			a = a >> 1;
+			a = a << 1;
+			if (a == c) {
+				result = "0" + result;
+			} else {
+				result = "1" + result;
+			}
+			a = a >> 1;
+		}
+
+		return result;
+	}
+
 	public CompressResult compressText(String text){
 		ArrayList<Byte> bytes = new ArrayList<>();
 
@@ -103,7 +122,7 @@ public class Huffman extends Algorithm {
 
 		for (int i = 0; i < text.length(); i++) {
 			code = table[text.charAt(i)];
-
+			// System.out.println(binToString(code.code, code.len));
 			for (int j = code.len - 1; j >= 0; j--) {
 					buffer <<= 1;
 					if ((code.code & (1 << j)) != 0) 
@@ -118,18 +137,20 @@ public class Huffman extends Algorithm {
 				}
 		}
 
-		if (buffer != 0)
+		// System.out.println(buffer);
+		if (len != 0){
 			bytes.add((byte) (buffer << 8 - len));
+		}
 
 		return new CompressResult(bytes, bitLen);
 	}
 
-	public String expendBytes(HuffmanNode trie, byte[] bytes, int size){
+	public String expendBytes(HuffmanNode trie, byte[] bytes, int bitSize){
 		StringBuilder text = new StringBuilder();
 		HuffmanNode x = trie;
 		int n = 0;
 
-		for (int i = 0; i < bytes.length; i++) {
+		out: for (int i = 0; i < bytes.length; i++) {
 			for (int j = 7; j >= 0; j--) {
 				if ((bytes[i] & (1 << j)) != 0) 
 					x = x.getRight();
@@ -141,8 +162,8 @@ public class Huffman extends Algorithm {
 					x = trie;
 				}
 				n++;
-				if (n == size) 
-					break;
+				if (n == bitSize) 
+					break out;
 			}
 		}
 
@@ -220,7 +241,7 @@ public class Huffman extends Algorithm {
 				}
 				index++;
 				if (index == byteNum) {
-					if (buffer != 0)
+					if (len != 0)
 						out.write(buffer << 8 - len);
 					break out;
 				}

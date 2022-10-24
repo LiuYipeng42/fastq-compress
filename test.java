@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import algorithm.Algorithm;
 import algorithm.BWT;
@@ -10,11 +11,12 @@ import algorithm.Huffman;
 import algorithm.LZW;
 import algorithm.RLE;
 import algorithm.ShannonFano;
+import pojo.CompressResult;
 
 
 public class test {
 
-	public String binToString(int b, int len) {
+	public static String binToString(int b, int len) {
 		String result = "";
 		int a = b;
 
@@ -180,7 +182,7 @@ public class test {
 		// BWTtest("test_data/.fastq");
 
 		String[] algos = new String[] {"huffman", "sf", "lzw", "rle", "fmix"};
-		String file = "test_data/dataset";
+		String file = "test_data/test2";
 
 		for (String algo : algos) {
 			System.out.println("----------------------");

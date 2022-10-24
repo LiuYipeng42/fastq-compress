@@ -218,7 +218,7 @@ public class ShannonFano extends Algorithm {
 				}
 				index++;
 				if (index == byteNum) {
-					if (buffer != 0)
+					if (len != 0)
 						out.write(buffer << 8 - len);
 					break out;
 				}
