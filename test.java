@@ -3,7 +3,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 import algorithm.Algorithm;
 import algorithm.BWT;
@@ -11,8 +10,6 @@ import algorithm.Huffman;
 import algorithm.LZW;
 import algorithm.RLE;
 import algorithm.ShannonFano;
-import pojo.CompressResult;
-
 
 public class test {
 
@@ -35,11 +32,11 @@ public class test {
 		return result;
 	}
 
-	public static void compressTest(String algo, String file) throws IOException{
+	public static void compressTest(String algo, String file) throws IOException {
 
 		Algorithm algorithm = null;
 
-		switch(algo){
+		switch (algo) {
 			case "huffman":
 				algorithm = new Huffman();
 				break;
@@ -52,16 +49,16 @@ public class test {
 			case "lzw":
 				algorithm = new LZW();
 				break;
-			case "fmix":
-				algorithm = new FastqCompress();
+			case "mix":
+				algorithm = new MixCompress();
 		}
 
 		System.out.println(algo);
 
 		long t;
-	
+
 		t = System.currentTimeMillis();
-		algorithm.compress(file + ".fastq");
+		algorithm.compress(file + ".bwt");
 		System.out.println("compress time: " + (System.currentTimeMillis() - t));
 
 		t = System.currentTimeMillis();
@@ -77,18 +74,21 @@ public class test {
 
 	}
 
-	public static void BWTtest(String filepath) throws IOException {
+	public static void BWTtest(String filepath, String type) throws IOException {
 
 		BWT bwt = new BWT();
 		long t;
 
 		t = System.currentTimeMillis();
-		bwt.bwt(filepath, "bwt", 1024 * 10);
-		System.out.println("encode time: " + (System.currentTimeMillis() - t));
+		if (type.equals("bwt")) {
+			bwt.bwt(filepath, "bwt", 1024 * 100);
+			System.out.println("encode time: " + (System.currentTimeMillis() - t));
 
-		t = System.currentTimeMillis();
-		bwt.bwt(filepath, "ibwt", 1024 * 10);
-		System.out.println("decode time: " + (System.currentTimeMillis() - t));
+		}
+		if (type.equals("ibwt")) {
+			bwt.bwt(filepath, "ibwt", 1024 * 10);
+			System.out.println("decode time: " + (System.currentTimeMillis() - t));
+		}
 
 		InputStream is = new FileInputStream(filepath);
 		BufferedInputStream in = new BufferedInputStream(is);
@@ -117,7 +117,7 @@ public class test {
 			in.read(bytes);
 
 			for (int i = 0; i < bytes.length; i++) {
-				all ++;
+				all++;
 
 				now = bytes[i];
 
@@ -153,8 +153,8 @@ public class test {
 					if (equal)
 						if (cnt > 1)
 							equalLen += cnt;
-						if (cnt > equalMax)
-							equalMax = cnt;
+					if (cnt > equalMax)
+						equalMax = cnt;
 					else {
 						if (cnt > 1)
 							notEqualLen += cnt - 1;
@@ -165,7 +165,7 @@ public class test {
 				}
 			}
 		}
-		in.close();	
+		in.close();
 
 		System.out.println("连续相等的字符最大长度：" + equalMax);
 		System.out.println("连续相等的字符总长度：" + equalLen);
@@ -177,16 +177,18 @@ public class test {
 
 	}
 
-	// rm *.lzw *.huffman *.sf *.rle *.bwt *.fmix test[0-9][0-9].fastq dataset[1-9].fastq
+	// rm *.lzw *.huffman *.sf *.rle *.bwt *.mix test[0-9][0-9].fastq
+	// dataset[1-9].fastq
 	public static void main(String[] args) throws IOException {
-		// BWTtest("test_data/.fastq");
+		// BWTtest("test_data/dataset.bwt", "1");
+		// BWTtest("test_data/test2.bwt", "ibwt");
 
-		String[] algos = new String[] {"huffman", "sf", "lzw", "rle", "fmix"};
-		String file = "test_data/test2";
+		String[] algos = new String[] {"huffman", "sf", "lzw", "rle"};
+		String file = "test_data/dataset";
 
 		for (String algo : algos) {
-			System.out.println("----------------------");
-			compressTest(algo, file);
+		System.out.println("----------------------");
+		compressTest(algo, file);
 		}
 
 	}
