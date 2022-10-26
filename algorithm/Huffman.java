@@ -216,7 +216,7 @@ public class Huffman extends Algorithm {
 		HuffmanCode code;
 		int buffer = 0;
 		int len = 0;
-		int bitLen = 0;  // 文件的总比特数
+		long bitLen = 0;  // 文件的总比特数
 
 		out: while (true) {
 			in.read(bytes);
@@ -240,6 +240,9 @@ public class Huffman extends Algorithm {
 					}
 				}
 				index++;
+				// if(index % 2000000 == 0){
+				// 	System.out.println(index + " " + byteNum);
+				// }
 				if (index == byteNum) {
 					if (len != 0)
 						out.write(buffer << 8 - len);
@@ -256,6 +259,7 @@ public class Huffman extends Algorithm {
 		RandomAccessFile rf = new RandomAccessFile(compressFilename, "rw");
 		// 用了 4 个字节记录了序列树的长度，所以要加上4
 		rf.seek(4 + objByteLen);
+		// System.out.println(bitLen);
 		rf.writeLong(bitLen);
 		rf.close();
 
@@ -301,6 +305,7 @@ public class Huffman extends Algorithm {
 		in.read(dataSize);
 		buffer = ByteBuffer.wrap(dataSize, 0, 8);
 		long size = buffer.getLong();
+		// System.out.println(size);
 
 		// 解压缩
 		byte[] bytes = new byte[1024 * 1024];
@@ -327,6 +332,10 @@ public class Huffman extends Algorithm {
 						x = root;
 					}
 					n++;
+					// if(n % 2000000 == 0){
+					// 	System.out.println(n + " " + size);
+					// }
+					
 					if (n == size) {
 						break out;
 					}

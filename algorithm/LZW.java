@@ -276,7 +276,7 @@ public class LZW extends Algorithm {
 			// 找到最长前缀及其编码
 			Prefix prefix = tst.longestPrefixOf(text, beginIndex);
 
-			// 存储最长前缀的编码，编码是 12 位
+			// 存储最长前缀的编码，编码是 16 位
 			for (int i = codeLen - 1; i >= 0; i--) {
 				buffer <<= 1;
 				buffer |= ((prefix.code & (1 << i)) != 0) ? 1 : 0;
@@ -399,7 +399,6 @@ public class LZW extends Algorithm {
 
 		out.flush();
 		out.close();
-
 
 	}
 

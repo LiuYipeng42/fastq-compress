@@ -58,7 +58,7 @@ public class test {
 		long t;
 
 		t = System.currentTimeMillis();
-		algorithm.compress(file + ".bwt");
+		algorithm.compress(file + ".fastq");
 		System.out.println("compress time: " + (System.currentTimeMillis() - t));
 
 		t = System.currentTimeMillis();
@@ -183,12 +183,13 @@ public class test {
 		// BWTtest("test_data/dataset.bwt", "1");
 		// BWTtest("test_data/test2.bwt", "ibwt");
 
-		String[] algos = new String[] {"huffman", "sf", "lzw", "rle"};
-		String file = "test_data/dataset";
+		String[] algos = new String[] {"huffman", "sf", "lzw", "rle", "mix"};
+
+		String file = "test_data/ecoli_filtered";
 
 		for (String algo : algos) {
-		System.out.println("----------------------");
-		compressTest(algo, file);
+			System.out.println("----------------------");
+			compressTest(algo, file);
 		}
 
 	}

@@ -104,6 +104,7 @@ public class MixCompress extends Algorithm {
             if (lineCnt % 4 == 0) {
                 bytes = lzw.compressText(line);
                 // 字节数，用 16 位 bit 表示长度
+                out.write(bytes.size() >> 16);
                 out.write(bytes.size() >> 8);
                 out.write(bytes.size() & 0xff);
                 for (byte b : bytes)
@@ -112,6 +113,7 @@ public class MixCompress extends Algorithm {
             // bit
             if (lineCnt % 4 == 1) {
                 // 字符数
+                out.write(line.length() >> 16);
                 out.write(line.length() >> 8);
                 out.write(line.length() & 0xff);
                 for (int j = 0; j < line.length(); j++) {
@@ -140,6 +142,7 @@ public class MixCompress extends Algorithm {
             if (lineCnt % 4 == 3) {
                 data = huffman.compressText(line);
                 // bit 数
+                out.write(data.getBitLen() >> 16);
                 out.write(data.getBitLen() >> 8);
                 out.write(data.getBitLen() & 0xff);
                 for (byte b : data.getBytes()){
@@ -232,12 +235,13 @@ public class MixCompress extends Algorithm {
         out: while (true) {
 			in.read(bytes);
 			for (int i = 0; i < bytes.length; i++) {
-                if (dataLenByteNum < 2){
+                if (dataLenByteNum < 3){
                     for (int j = 1; j >= 0; j--) {
                         dataLen <<= 4;
                         dataLen |= (bytes[i] >> 4 * j) & 0xf;
                     }
                     dataLenByteNum ++;
+
                 } else {
                     if (lineCnt % 4 == 0){
                         // lzw
@@ -312,5 +316,4 @@ public class MixCompress extends Algorithm {
         out.close();
 
     }
-
 }

@@ -197,7 +197,7 @@ public class ShannonFano extends Algorithm {
 		SFCode SFCode;
 		int buffer = 0;
 		int len = 0;
-		int bitLen = 0;
+		long bitLen = 0;
 
 		out: while (true) {
 			in.read(bytes);
